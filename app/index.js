@@ -35,7 +35,7 @@ serverInstance.get('/unsubscribe', function (req, res) {
   res.send('Device successful unsubscribed');
 })
 
-let stationIdMatcher = /(\w+:\d+)_.*/i
+let stationIdMatcher = /(\w+:\d+)_.*/i;
 
 serverInstance.get('/stations', (req, res) => {
   let cache = mFetcher.stationCache;
