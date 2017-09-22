@@ -7,7 +7,11 @@ const FCM_ENDPOINT = 'https://fcm.googleapis.com/fcm/send',
   PORT = 8080,
   Devices = require('./devicesdb'),
   Fetcher = require('./statefetcher'),
-  Notification = require('./notification');
+  Notification = require('./notification'),
+  dotenv = require('dotenv');
+
+// Load .env-files
+dotenv.load();
 
 let mDevices = new Devices();
 serverInstance.set('port', (process.env.PORT || PORT));
