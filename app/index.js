@@ -16,8 +16,7 @@ serverInstance.get('/', function (req, res) {
   res.send('<pre>This is endpoint of MobilityHackathon2017 project of Hamburger Appwerft\nThis emdpoint receives the registrations for push notification and if the state of elevators is changed the the server sends messages to all devices.');
 })
 // a device has subscribed to service and sends token:
-serverInstance.get('/subscribe', function (req,res) {
-  console.log(req);
+serverInstance.get('/subscribe', function (req, res) {
   mDevices.subscribe(req.query.token);
   res.send('Device successful subscribed');
 })
