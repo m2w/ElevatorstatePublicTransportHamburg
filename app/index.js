@@ -1,5 +1,5 @@
 "use strict"
-
+const geofox = require('./geofox');
 const serverInstance = require('express')();
 
 const FCM_ENDPOINT = 'https://fcm.googleapis.com/fcm/send',
@@ -8,6 +8,9 @@ const FCM_ENDPOINT = 'https://fcm.googleapis.com/fcm/send',
   Devices = require('./devicesdb'),
   Fetcher = require('./statefetcher'),
   Notification = require('./notification');
+
+let mFetcher = new Fetcher();
+mFetcher.start();
 
 let mDevices = new Devices();
 serverInstance.set('port', (process.env.PORT || PORT));
@@ -26,13 +29,31 @@ serverInstance.get('/unsubscribe', function (req, res) {
   res.send('Device successful unsubscribed');
 })
 
+let stationIdMatcher = /(\w+:\d+)_.*/i
+
+serverInstance.get('/stations', (req, res) => {
+  let cache = mFetcher.stationCache;
+  let currentStatus = mFetcher.lastState;
+  let stations = new Set();
+  for (let elevator in currentStatus) {
+    let res = stationIdMatcher.exec(elevator);
+    let name = res[1];
+    stations.add(name);
+  }
+
+  let resp = [];
+  for (let station of cache) {
+    if (stations.has(station.id)) {
+      resp.push(station);
+    }
+  }
+  res.json(resp);
+});
+
 // start server
 serverInstance.listen(serverInstance.get('port'), function () {
   console.log('Server started at port ' + PORT);
 });
-
-let mFetcher = new Fetcher();
-mFetcher.start();
 
 mFetcher.on('data', (payload) => {
   new Notification(payload);
