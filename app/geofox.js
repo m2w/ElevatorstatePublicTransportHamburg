@@ -1,5 +1,9 @@
 const axios = require('axios');
 const crypto = require('crypto');
+const dotenv = require('dotenv');
+
+// Load .env-files
+dotenv.load();
 
 let genSig = (body) => {
   let hmac = crypto.createHmac('sha1', process.env.GEOFOX_PSWD);
