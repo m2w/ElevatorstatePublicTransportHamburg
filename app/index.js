@@ -1,10 +1,9 @@
 "use strict"
 
-const serverInstance = require('express')();
+const express = require('express');
+const serverInstance = express();
 
 const FCM_ENDPOINT = 'https://fcm.googleapis.com/fcm/send',
-  FCM_APPID = '123456',
-  PORT = 8080,
   Devices = require('./devicesdb'),
   Fetcher = require('./statefetcher'),
   Notification = require('./notification'),
@@ -14,7 +13,7 @@ const FCM_ENDPOINT = 'https://fcm.googleapis.com/fcm/send',
 dotenv.load();
 
 let mDevices = new Devices();
-serverInstance.set('port', (process.env.PORT || PORT));
+serverInstance.set('port', (process.env.PORT));
 // a device has subscribed to service and sends token:
 serverInstance.get('/', function (req, res) {
   res.send('<pre>This is endpoint of MobilityHackathon2017 project of Hamburger Appwerft\nThis emdpoint receives the registrations for push notification and if the state of elevators is changed the the server sends messages to all devices.');
@@ -32,7 +31,7 @@ serverInstance.get('/unsubscribe', function (req, res) {
 
 // start server
 serverInstance.listen(serverInstance.get('port'), function () {
-  console.log('Server started at port ' + PORT);
+  console.log('Server started at port ' + process.env.PORT);
 });
 
 let mFetcher = new Fetcher();
