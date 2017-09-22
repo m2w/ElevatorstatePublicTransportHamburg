@@ -2,6 +2,7 @@
 
 const fetch = require('node-fetch');
 const Axios = require('axios');
+const geofox = require('./geofox');
 
 
 const EventEmitter = require('events');
@@ -9,7 +10,7 @@ const GEOFOX_URL = 'https://geofox.hvv.de/data-service/rest/elevators/stations/'
 // private var
 let lastState = {};
 
-class Fetcher extends EventEmitter  {
+class Fetcher extends EventEmitter {
   constructor() {
     super();
     this.count = 1;
@@ -24,10 +25,10 @@ class Fetcher extends EventEmitter  {
     );
   };
 
-  stop(){
+  stop() {
     clearInterval(this.cron);
-  }; 
-  
+  };
+
   _fetchStateAndGetDiff(json) {
     const start = new Date().getTime();
     Axios(GEOFOX_URL).then(response => {
