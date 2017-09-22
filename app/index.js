@@ -65,6 +65,12 @@ serverInstance.get('/stations', (req, res) => {
   res.json(resp);
 });
 
+serverInstance.get('/stations/:stationId', (req, res) => {
+  geofox.getStationData(req.params.stationId).then((data) => {
+    res.json(data);
+  });
+});
+
 // start server
 serverInstance.listen(serverInstance.get('port'), function () {
   console.log('Server started at port ' + process.env.PORT);
