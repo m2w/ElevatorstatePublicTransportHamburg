@@ -40,16 +40,25 @@ let stationIdMatcher = /(\w+:\d+)_.*/i
 serverInstance.get('/stations', (req, res) => {
   let cache = mFetcher.stationCache;
   let currentStatus = mFetcher.lastState;
-  let stations = new Set();
+  let stations = {};
   for (let elevator in currentStatus) {
     let res = stationIdMatcher.exec(elevator);
     let name = res[1];
-    stations.add(name);
+    if (stations[name] === undefined) {
+      stations[name] = {
+        elevatorCount: 0,
+        aggregateElevatorStatus: 0
+      };
+    }
+    stations[name].elevatorCount += 1;
+    stations[name].aggregateElevatorStatus += currentStatus[elevator];
   }
 
   let resp = [];
   for (let station of cache) {
-    if (stations.has(station.id)) {
+    let statusData = stations[station.id];
+    if (statusData !== undefined) {
+      station.status = statusData;
       resp.push(station);
     }
   }
