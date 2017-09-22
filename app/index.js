@@ -13,6 +13,8 @@ const FCM_ENDPOINT = 'https://fcm.googleapis.com/fcm/send',
 // Load .env-files
 dotenv.load();
 
+serverInstance.use(express.static('views'));
+
 let mFetcher = new Fetcher();
 mFetcher.start();
 
@@ -20,7 +22,7 @@ let mDevices = new Devices();
 serverInstance.set('port', (process.env.PORT));
 // a device has subscribed to service and sends token:
 serverInstance.get('/', function (req, res) {
-  res.send('<pre>This is endpoint of MobilityHackathon2017 project of Hamburger Appwerft\nThis emdpoint receives the registrations for push notification and if the state of elevators is changed the the server sends messages to all devices.');
+  res.render('index');
 })
 // a device has subscribed to service and sends token:
 serverInstance.get('/subscribe', function (req, res) {

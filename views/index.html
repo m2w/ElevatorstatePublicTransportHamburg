@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Elevator - Mobility-Hackathon</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css">
+    <style type="text/css">
+        html, body, #map {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+
+<script type="text/javascript" src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+
+<script type="text/javascript">
+    const mymap = L.map('map').setView([53.551085, 9.993682], 13);
+
+    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+        maxZoom: 18,
+        attribution: '<a href="http://mobility-hackathon.de/">Mobility-Hackathon Hamburg</a>' +
+        ' - Elevator - Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+        '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+        'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        id: 'mapbox.streets'
+    }).addTo(mymap);
+
+    const circle = L.circle([53.551085, 9.993682], {
+        color: 'red',
+        fillColor: '#f03',
+        fillOpacity: 0.7,
+        radius: 80
+    }).addTo(mymap);
+
+    circle.bindPopup("I am a circle.");
+
+    const circle2 = L.circle([53.555671, 9.983769], {
+        color: 'green',
+        fillColor: '#88CC88',
+        fillOpacity: 0.7,
+        radius: 80
+    }).addTo(mymap);
+
+    const circle3 = L.circle([53.557404, 10.012436], {
+        color: 'yellow',
+        fillColor: '#FFFFAA',
+        fillOpacity: 0.7,
+        radius: 80
+    }).addTo(mymap);
+
+</script>
+</body>
+</html>
