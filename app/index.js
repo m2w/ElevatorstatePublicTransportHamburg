@@ -26,7 +26,7 @@ serverInstance.get('/unsubscribe', function (req, res) {
   res.send('Device successful unsubscribed');
 })
 
-// start server on port 80 
+// start server
 serverInstance.listen(serverInstance.get('port'), function () {
   console.log('Server started at port ' + PORT);
 });
