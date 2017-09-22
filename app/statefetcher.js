@@ -27,8 +27,8 @@ class Fetcher extends EventEmitter {
 
     this._fetchStateAndGetDiff();
     this.cron = setInterval(
-      ()=>this._fetchStateAndGetDiff(),
-      30*1000
+      () => this._fetchStateAndGetDiff(),
+      30 * 60 * 1000
     );
   };
 
