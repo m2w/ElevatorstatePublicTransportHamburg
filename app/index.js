@@ -4,7 +4,7 @@ const serverInstance = require('express')();
 
 const FCM_ENDPOINT = 'https://fcm.googleapis.com/fcm/send',
   FCM_APPID = '123456',
-  PORT = 80,
+  PORT = 8080,
   Devices = require('./devicesdb'),
   Fetcher = require('./statefetcher'),
   Notification = require('./notification');
