@@ -8,7 +8,7 @@ let genSig = (body) => {
   return hmac.digest('base64');
 }
 
-export let getStationData = (id) => {
+exports.getStationData = (id) => {
   let body = {
     station: {
       id: id
@@ -23,7 +23,7 @@ export let getStationData = (id) => {
       'geofox-auth-signature': genSig(body)
     }
   });
-  client.post('/gti/public/getStationInformation',
+  return client.post('/gti/public/getStationInformation',
     body
   ).then((resp) => {
     return resp.data.partialStations;
@@ -32,7 +32,7 @@ export let getStationData = (id) => {
   });
 }
 
-export let getAllStations = () => {
+exports.getAllStations = () => {
   let body = {
     "language": "de",
     "version": 31.1
@@ -46,7 +46,7 @@ export let getAllStations = () => {
       'geofox-auth-signature': genSig(body)
     }
   });
-  client.post('/gti/public/listStations',
+  return client.post('/gti/public/listStations',
     body
   ).then((resp) => {
     return resp.data.stations;
