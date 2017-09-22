@@ -3,17 +3,15 @@
 const fetch = require('node-fetch');
 const Axios = require('axios');
 const geofox = require('./geofox');
-
-
 const EventEmitter = require('events');
 const GEOFOX_URL = 'https://geofox.hvv.de/data-service/rest/elevators/stations/';
 // private var
 let lastState = {};
-let cache = {};
 
 class Fetcher extends EventEmitter {
   constructor() {
     super();
+    this.stationCache = {};
     this.count = 1;
     this.lastState = {}
     this.cron;
@@ -22,7 +20,7 @@ class Fetcher extends EventEmitter {
     console.log('=== Initializing Elevator Status Monitor');
     geofox.getAllStations().then((data) => {
       console.log('=== Retrieved Station Data');
-      cache.stations = data;
+      this.stationCache = data;
     });
 
     this._fetchStateAndGetDiff();
@@ -43,7 +41,6 @@ class Fetcher extends EventEmitter {
         try {
           const json = response.data;
           var newState = {};
-          cache = json;
           // extracting hash of all states
           json.stations.forEach(station => {
             Object.getOwnPropertyNames(station.elevators).forEach(elevatorId => {
