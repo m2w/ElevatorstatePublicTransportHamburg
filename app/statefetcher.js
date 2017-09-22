@@ -13,7 +13,7 @@ class Fetcher extends EventEmitter {
     super();
     this.stationCache = {};
     this.count = 1;
-    this.lastState = {}
+    this.lastState = {};
     this.cron;
   };
   start() {
