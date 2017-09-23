@@ -25,25 +25,61 @@
 <script type="text/javascript" src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
 
 <script>
-    const request = new XMLHttpRequest();
-    request.open('GET', '/stations', true);
+    const renderStations = function() {
+        const request = new XMLHttpRequest();
 
-    request.onload = function() {
-        if (request.status >= 200 && request.status < 400) {
-            // Success!
-            const data = JSON.parse(request.responseText);
+        request.open('GET', '/stations', true);
+        request.onload = () => {
+            if (request.status >= 200 && request.status < 400) {
+                // Success!
+                const data = JSON.parse(request.responseText);
 
-            document.getElementById('test').innerHTML = request.responseText;
-        } else {
-            // We reached our target server, but it returned an error
-        }
+                // Build a circle for every station
+                data.forEach((station) => {
+                    // Build the circle options
+                    const options = {
+                        fillOpacity: 0.7,
+                        radius: 80
+                    };
+
+                    switch (station.status) {
+                        case 1:
+                            options.color = 'green';
+                            options.fillColor = '#88CC88';
+                            break;
+                        case 0:
+                            options.color = 'yellow';
+                            options.fillColor = '#FFFFAA';
+                            break;
+                        default:
+                            options.color = 'red';
+                            options.fillColor = '#f03';
+                    }
+
+                    // Build circles
+                    L.circle([station.coordinate.y, station.coordinate.x], options)
+                        .addTo(mymap)
+                        .on('click', a);
+                });
+            } else {
+                // We reached our target server, but it returned an error
+            }
+        };
+
+        request.onerror = () => {
+            // There was a connection error of some sort
+        };
+
+        request.send();
     };
 
-    request.onerror = function() {
-        // There was a connection error of some sort
+
+    const renderStationInformation = function () {
+        alert("asdf");
     };
 
-    request.send();
+
+    renderStations();
 </script>
 
 <script type="text/javascript">
@@ -65,7 +101,7 @@
         radius: 80
     }).addTo(mymap);
 
-    circle.bindPopup("I am a circle.");
+    circle.bindPopup('<img src="http://lorempixel.com/400/200/" alt="lorempixel">');
 
     const circle2 = L.circle([53.555671, 9.983769], {
         color: 'green',
