@@ -153,6 +153,11 @@
 
                 // Build a circle for every station
                 data.forEach((station) => {
+                    if (station.id === 'Master:80950') {
+                        console.log(station);
+                    }
+
+
                     // Build the circle options
                     const options = {
                         fillOpacity: 0.7,
@@ -200,6 +205,8 @@
                     // Success!
                     const data = JSON.parse(request.responseText);
 
+                    console.log(data);
+
                     const $modal = document.getElementById('modal');
                     if (typeof data[0] !== 'undefined' && typeof data[0].stationOutline !== 'undefined') {
                         $modal.innerHTML = '<img src="' + data[0].stationOutline + '">';
@@ -209,7 +216,7 @@
 
                     if (typeof data[0] !== 'undefined' && typeof data[0].elevators !== 'undefined') {
                         data[0].elevators.forEach((elevator) => {
-                            let color = 'yellow';
+                            let color = 'grey';
 
                             if (elevator.state === 'READY') {
                                 color = 'green';

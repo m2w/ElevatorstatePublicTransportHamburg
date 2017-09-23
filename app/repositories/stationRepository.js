@@ -5,9 +5,10 @@ severity = (status) => {
     if (status.every((s) => { return s === 1 })) {
         return 1;
     }
-    if (status.every((s) => { return s <= 0 })) {
+    if (status.every((s) => { return s < 0 })) {
         return -1;
     }
+
     return 0;
 };
 
