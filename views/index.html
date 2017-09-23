@@ -25,7 +25,7 @@
 <script type="text/javascript" src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
 
 <script>
-    const renderStations = function() {
+    const renderStations = function () {
         const request = new XMLHttpRequest();
 
         request.open('GET', '/stations', true);
@@ -58,8 +58,9 @@
 
                     // Build circles
                     L.circle([station.coordinate.y, station.coordinate.x], options)
+                        .bindPopup('', {maxWidth: '500px', maxHeight: '500px'})
                         .addTo(mymap)
-                        .on('click', a);
+                        .on('click', renderStationInformation(station));
                 });
             } else {
                 // We reached our target server, but it returned an error
@@ -74,8 +75,30 @@
     };
 
 
-    const renderStationInformation = function () {
-        alert("asdf");
+    const renderStationInformation = (station) => {
+        return (e) => {
+            const popup = e.target.getPopup();
+            const request = new XMLHttpRequest();
+
+            request.open('GET', '/stations/' + station.id, true);
+            request.onload = () => {
+                if (request.status >= 200 && request.status < 400) {
+                    // Success!
+                    const data = JSON.parse(request.responseText);
+
+                    popup.setContent(`<img src="${data[0].stationOutline}" height="400px" alt="station">`);
+                    popup.update();
+                } else {
+                    // We reached our target server, but it returned an error
+                }
+            };
+
+            request.onerror = () => {
+                // There was a connection error of some sort
+            };
+
+            request.send();
+        };
     };
 
 
@@ -93,30 +116,6 @@
         'Imagery © <a href="http://mapbox.com">Mapbox</a>',
         id: 'mapbox.streets'
     }).addTo(mymap);
-
-    const circle = L.circle([53.551085, 9.993682], {
-        color: 'red',
-        fillColor: '#f03',
-        fillOpacity: 0.7,
-        radius: 80
-    }).addTo(mymap);
-
-    circle.bindPopup('<img src="http://lorempixel.com/400/200/" alt="lorempixel">');
-
-    const circle2 = L.circle([53.555671, 9.983769], {
-        color: 'green',
-        fillColor: '#88CC88',
-        fillOpacity: 0.7,
-        radius: 80
-    }).addTo(mymap);
-
-    const circle3 = L.circle([53.557404, 10.012436], {
-        color: 'yellow',
-        fillColor: '#FFFFAA',
-        fillOpacity: 0.7,
-        radius: 80
-    }).addTo(mymap);
-
 </script>
 </body>
 </html>
