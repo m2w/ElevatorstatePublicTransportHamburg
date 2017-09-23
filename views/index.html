@@ -18,21 +18,12 @@
             position: relative;
         }
 
-        .statusBubble {
-            width: 25px;
-            height: 25px;
-            border-radius: 25px;
-            float: left;
+        .circle {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
             margin: 0 10px;
-        }
-
-        .clearfix:after {
-            visibility: hidden;
-            display: block;
-            content: " ";
-            height: 0;
-            font-size: 0;
-            clear: both
+            display: inline-block;
         }
 
         #modal {
@@ -60,24 +51,16 @@
             transform: translate(-50%, -50%);
         }
 
-        #modal ul {
+        #modal .elevators {
             position: absolute;
             bottom: 0;
             right: 0;
-            width: 100%;
-            list-style: none;
-            padding: 5px;
-            margin: 0;
-            font-size: 0;
-            text-align: center;
+            width: 96%;
+            padding: 2%;
             background: white;
+            text-align: left;
         }
 
-        #modal ul li {
-            font-size: 1rem;
-            display: inline-block;
-            vertical-align: top;
-        }
     </style>
 </head>
 <body>
@@ -87,35 +70,68 @@
 <script type="text/javascript" src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
 
 <script>
+    const preferedTrackAttributes   = ['COBBLESTONE'];
+
+
+    function arraysEqual(arr1, arr2) {
+        if(arr1.length !== arr2.length)
+            return false;
+        for(let i = arr1.length; i--;) {
+            if(arr1[i] !== arr2[i])
+                return false;
+        }
+
+        return true;
+    }
+
     function drawRoute(lat, long, end) {
         const request = new XMLHttpRequest();
         request.open('GET', `/route/${lat}/${long}/${end}`, true);
-        request.onload = function() {
-                if (request.status >= 200 && request.status < 400) {
-                    const data = JSON.parse(request.responseText);
-                    const paths = data[0].paths;
-                    let points = []
-                    for (let track in paths) {
-                        for (let coord of paths[track].track) {
-                            let point = new L.LatLng(coord.y, coord.x);
-                            points.push(point);
-                        }
+        request.onload = function () {
+            if (request.status >= 200 && request.status < 400) {
+                const data = JSON.parse(request.responseText);
+                const paths = data[0].paths;
+                let points = [];
+                for (let track in paths) {
+                    for (let coord of paths[track].track) {
+                        let point = new L.LatLng(coord.y, coord.x);
+                        points.push(point);
                     }
-                    var firstpolyline = new L.Polyline(points, {
-                        color: 'red',
-                        weight: 3,
-                        opacity: 0.5,
-                        smoothFactor: 1
-                    });
-                    firstpolyline.addTo(mymap);
                 }
-            };
-            request.send();
+                let firstpolyline = new L.Polyline(points, {
+                    color: 'red',
+                    weight: 3,
+                    opacity: 0.5,
+                    smoothFactor: 1
+                });
+                firstpolyline.addTo(mymap);
+            }
+        };
+        request.send();
+    }
+
+    function drawIndividualRoute(start, destination) {
+        const request = new XMLHttpRequest();
+        request.open('GET', `/route/${start}/${destination}`, true);
+        request.onload = function () {
+            if (request.status >= 200 && request.status < 400) {
+                const data = JSON.parse(request.responseText);
+                data[0].paths.forEach((path) => {
+                    if (arraysEqual(preferedTrackAttributes, path.attributes)) {
+                        console.log(path.track);
+                        path.track.forEach((coordinates) => {
+                            drawRoute(coordinates.y, coordinates.x, destination);
+                        });
+                    }
+                });
+            }
+        };
+        request.send();
     }
 
     // GeoLocation related code
     if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(function(position) {
+        navigator.geolocation.getCurrentPosition(function (position) {
             const options = {
                 fillOpacity: 0.7,
                 radius: 80,
@@ -126,10 +142,13 @@
 
             const request = new XMLHttpRequest();
             request.open('GET', `/stations/closest/${position.coords.latitude}/${position.coords.longitude}`, true);
-            request.onload = function() {
+            request.onload = function () {
                 if (request.status >= 200 && request.status < 400) {
                     const data = JSON.parse(request.responseText);
                     const target = data[0];
+
+                    drawIndividualRoute('Master:8000238', 'Master:80950');
+                    //drawIndividualRoute('Master:83900', 'Master:80950');
 
                     drawRoute(position.coords.latitude, position.coords.longitude, data[0].id);
                 }
@@ -153,6 +172,8 @@
 
                 // Build a circle for every station
                 data.forEach((station) => {
+                    console.log(station.id);
+                    
                     // Build the circle options
                     const options = {
                         fillOpacity: 0.7,
@@ -219,11 +240,16 @@
                                 color = 'red';
                             }
 
+                            let lines = '';
+                            if (typeof elevator.lines !== 'undefined') {
+                                lines = elevator.lines.join(', ');
+                            }
+
                             statusBubblesHTML = statusBubblesHTML
-                                + '<li><span class="statusBubble" style="background: ' + color + '"></span></li>';
+                                + '<div><div class="circle" style="background: ' + color + '"></div> ' + lines + '</div>';
                         });
 
-                        $modal.innerHTML = $modal.innerHTML + '<ul>' + statusBubblesHTML + '</ul>';
+                        $modal.innerHTML = $modal.innerHTML + '<div class="elevators">' + statusBubblesHTML + '</div></ul>';
 
                         $modal.style.display = 'block';
                     }

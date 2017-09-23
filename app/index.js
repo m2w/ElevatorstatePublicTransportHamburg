@@ -77,7 +77,7 @@ serverInstance.get('/route/:lat/:long/:dest', (req, res) => {
   } else {
     res.json({
       error: 'invalid params',
-      msg: 'either from or dest has no elevators or is an invalid route target'
+      msg: 'either lat, long or dest has no elevators or is an invalid route target'
     });
   }
 });
