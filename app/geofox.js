@@ -54,3 +54,41 @@ exports.getAllStations = () => {
     console.log(err);
   });
 }
+
+exports.getRoutes = (coordianteS, coordianteD) => {
+  let body = {
+    "version": 31.1,
+    "starts": [
+      {
+        "coordinate": coordianteS
+      }
+    ],
+    "dests": [
+      {
+        "coordinate": coordianteD
+      }
+    ],
+    "type": "EPSG_4326",
+    "serviceType": "FOOTPATH"
+  }
+  let client = axios.create({
+    baseURL: 'http://api-hack.geofox.de/',
+    timeout: 5000,
+    headers: {
+      'geofox-auth-type': 'HmacSHA1',
+      'geofox-auth-user': 'mobi-hack',
+      'geofox-auth-signature': genSig(body)
+    }
+  });
+  return client.post('/gti/public/getIndividualRoute',
+    body
+  ).then((resp) => {
+    // length in meter
+    // time in minutes
+    return resp.data.routes;
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+
+// getRoutes({ x: 9.952789, y: 53.571653 }, { x: 9.90158, y: 53.610399 });

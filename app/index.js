@@ -39,13 +39,30 @@ serverInstance.get('/unsubscribe', function (req, res) {
 });
 
 serverInstance.get('/stations', (req, res) => {
-    res.json(StationRepository.all(mFetcher));
+  res.json(StationRepository.all(mFetcher));
 });
 
 serverInstance.get('/stations/:stationId', (req, res) => {
+  // `stationId` is a geofox id, e.g. `Master:91900`
   geofox.getStationData(req.params.stationId).then((data) => {
     res.json(data);
   });
+});
+
+serverInstance.get('/route/:from/:dest', (req, res) => {
+  // `from` and `to` are geofox ids, e.g. Master:91900
+  let from = StationRepository.get(mFetcher, req.params.from);
+  let to = StationRepository.get(mFetcher, req.params.dest);
+  if (from !== undefined && to !== undefined) {
+    geofox.getRoutes(from.coordinate, to.coordinate).then((route) => {
+      res.json(route);
+    });
+  } else {
+    res.json({
+      error: 'invalid params',
+      msg: 'either from or dest has no elevators or is an invalid route target'
+    });
+  }
 });
 
 // start server
