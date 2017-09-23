@@ -7,10 +7,14 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Elevator - Mobility-Hackathon</title>
 
+
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css">
     <style type="text/css">
         html, body, #map {
             height: 100%;
+            font-family: 'Open Sans', sans-serif;
         }
 
         body {
@@ -37,9 +41,18 @@
             transform: translate(-50%, -50%);
             background: white;
             padding: 10px;
-            z-index: 9000;
-            display: none;
-            text-align: center;
+            z-index: 9999;
+          text-align: center;
+        }
+
+        #modal-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            background-color: rgba(0, 0, 0, 0.4);
         }
 
         #modal img {
@@ -79,17 +92,124 @@
 
         .leaflet-popup-close-button {
             display: none;
+
+        #target {
+            position: absolute;
+            top: 1em;
+            right: 1em;
+            z-index: 1000;
+            border: none;
+            box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+            background-color: white;
+            color: black;
+            font-size: large;
+            cursor: pointer;
+        }
+
+        #target:hover {
+            box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+            background-color: darkgrey;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .form {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .form-content {
+            position: absolute;
+            top: calc(50% - 5em);
+            left: calc(50% - 10em);
+            padding: 1em;
+            text-align: center;
+            box-sizing: border-box;
+            width: 20em;
+            z-index: 1000;
+            height: 15em;
+            background-color: white;
+            z-index: 999;
+            box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+        }
+        .form h2 {
+            margin-top: 0;
+        }
+
+        .form input {
+            width: 100%;
+        }
+
+        .form button {
+            margin-top: 1em;
+            font-size: large;
+            line-height: 1.5em;
+            border: none;
+            cursor: pointer;
+            background-color: white;
+            box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+        }
+        .form button:hover {
+            box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
         }
     </style>
 </head>
 <body>
-<div id="modal"></div>
+    <button id="target">Reiseziel</button>
+<div id="modal-backdrop" class="hidden">
+    <div id="modal"></div>
+</div>
+<div class="form hidden">
+    <div class="form-content">
+        <h2>Route Berrechnen</h2>
+        <div>
+            <input id="start-input" type="text" placeholder="Abfahrtsstation" name="start">
+            <input id="start-id" class="hidden-input" type="hidden" name="start-id">
+        </div>
+        <div>
+            <input id="end-input" type="text" placeholder="Zielstation" name="target">
+            <input id="end-id" class="hidden-input" type="hidden" name="target-id">
+        </div>
+        <button class="submit">
+            Route berrechnen
+        </button>
+    </div>
+</div>
+
 <div id="map"></div>
 
 <script type="text/javascript" src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
 
 <script>
-    const preferedTrackAttributes   = ['COBBLESTONE'];
+    const toggleModal = () => {
+        const $modalbg = document.getElementById('modal-backdrop');
+        $modalbg.classList.toggle('hidden');
+    }
+
+    const hideModal = () => {
+        const $modalbg = document.getElementById('modal-backdrop');
+        $modalbg.classList.add('hidden');
+        const contents = document.querySelector('.modal-content');
+        contents.remove();
+    }
+
+    const promptForTarget = (e) => {
+        const form = document.querySelector('.form');
+        form.classList.remove('hidden');
+        e.stopPropagation();
+    }
+
+    let target = document.getElementById('target');
+    target.addEventListener('click', promptForTarget);
+
+    const preferedTrackAttributes = ['COBBLESTONE'];
 
 
     function arraysEqual(arr1, arr2) {
@@ -135,14 +255,29 @@
         request.onload = function () {
             if (request.status >= 200 && request.status < 400) {
                 const data = JSON.parse(request.responseText);
+                console.log('draw individual route');
                 data[0].paths.forEach((path) => {
-                    if (arraysEqual(preferedTrackAttributes, path.attributes)) {
-                        console.log(path.track);
-                        path.track.forEach((coordinates) => {
-                            drawRoute(coordinates.y, coordinates.x, destination);
-                        });
-                    }
+                    path.track.forEach((coordinates) => {
+                        drawRoute(coordinates.y, coordinates.x, destination);
+                    });
                 });
+            }
+        };
+        request.send();
+    }
+    let postion;
+    let getRoute = (position) => {
+        const request = new XMLHttpRequest();
+        request.open('GET', `/stations/closest/${position.coords.latitude}/${position.coords.longitude}`, true);
+        request.onload = function () {
+            if (request.status >= 200 && request.status < 400) {
+                const data = JSON.parse(request.responseText);
+                const target = data[0];
+
+                // drawIndividualRoute('Master:8000238', 'Master:80950');
+                //drawIndividualRoute('Master:83900', 'Master:80950');
+
+                drawRoute(position.coords.latitude, position.coords.longitude, data[0].id);
             }
         };
         request.send();
@@ -151,6 +286,7 @@
     // GeoLocation related code
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(function (position) {
+            postion = position;
             const options = {
                 fillOpacity: 0.7,
                 radius: 80,
@@ -158,21 +294,6 @@
                 fillColor: '#3F7FBF'
             };
             L.circle([position.coords.latitude, position.coords.longitude], options).addTo(mymap);
-
-            const request = new XMLHttpRequest();
-            request.open('GET', `/stations/closest/${position.coords.latitude}/${position.coords.longitude}`, true);
-            request.onload = function () {
-                if (request.status >= 200 && request.status < 400) {
-                    const data = JSON.parse(request.responseText);
-                    const target = data[0];
-
-                    drawIndividualRoute('Master:8000238', 'Master:80950');
-                    //drawIndividualRoute('Master:83900', 'Master:80950');
-
-                    drawRoute(position.coords.latitude, position.coords.longitude, data[0].id);
-                }
-            };
-            request.send();
         });
     } else {
         console.warn('no geolocation available');
@@ -189,15 +310,17 @@
                 // Success!
                 const data = JSON.parse(request.responseText);
 
+                let autoCompleteList = [];
+
                 // Build a circle for every station
                 data.forEach((station) => {
-                    console.log(station.id);
-                    
                     // Build the circle options
                     const options = {
                         fillOpacity: 1,
                         radius: 80
                     };
+
+                    autoCompleteList.push({label: station.combinedName, value: station.id});
 
                     switch (station.status) {
                         case 1:
@@ -224,6 +347,26 @@
                         .addTo(mymap)
                         .on('click', renderStationInformation(station));
                 });
+                const start = document.getElementById('start-input');
+                const startId = document.getElementById('start-id');
+                const end = document.getElementById('end-input');
+                const endId = document.getElementById('end-id');
+                new Awesomplete(start, {
+                    list: autoCompleteList,
+                    autoFirst: true,
+                    replace: (text) => {
+                        start.value = text.label;
+                        startId.value = text.value;
+                    }
+                });
+                new Awesomplete(end, {
+                    list: autoCompleteList,
+                    autoFirst: true,
+                    replace: (text) => {
+                        end.value = text.label;
+                        endId.value = text.value;
+                    }
+                });
             } else {
                 console.error('We reached our target server, but it returned an error');
             }
@@ -237,7 +380,7 @@
     };
 
     const renderStationInformation = (station) => {
-        return () => {
+        return (e) => {
             const request = new XMLHttpRequest();
 
             request.open('GET', '/stations/' + station.id, true);
@@ -274,9 +417,8 @@
                                 + '<div><div class="circle" style="background: ' + color + '"></div> ' + lines + '</div>';
                         });
 
-                        $modal.innerHTML = $modal.innerHTML + '<div class="combinedName">' + station.combinedName + '</div>' + '<div class="elevators">' + statusBubblesHTML + '</div></ul>';
-
-                        $modal.style.display = 'block';
+                      $modal.innerHTML = '<div class="modal-content">' + $modal.innerHTML + '<div class="combinedName">' + station.combinedName + '</div>' + '<div class="elevators">' + statusBubblesHTML + '</div></ul></div>';
+                        toggleModal();
                     }
                 } else {
                     console.error('We reached our target server, but it returned an error');
@@ -293,6 +435,8 @@
     renderStations();
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.js"></script>
+
 <script type="text/javascript">
     const mymap = L.map('map').setView([53.551085, 9.993682], 13);
 
@@ -305,9 +449,53 @@
         id: 'mapbox.streets'
     }).addTo(mymap);
 
-    const $modal = document.getElementById('modal');
-    window.onclick = () => {
-        $modal.style.display = "none";
+    const form2 = document.querySelector('button.submit');
+    form2.addEventListener('click', (e)=>{
+        let start = document.getElementById('start-id').value;
+        let end = document.getElementById('end-id').value;
+        if (start !== undefined && end !== undefined) {
+            const request = new XMLHttpRequest();
+            request.open('GET', `/trip/${start}/${end}`, true);
+            request.onload = () => {
+                if (request.status >= 200 && request.status < 400) {
+                    const data = JSON.parse(request.responseText);
+                    let route = data[0];
+                    // TODO: update modal
+                    console.log(`Route von ${route.start.combinedName} nach ${route.dest.combinedName}`);
+                    let points = [];
+                    for (let schedule in route.scheduleElements) {
+                        for (let track in route.scheduleElements[schedule].paths) {
+                            let t = route.scheduleElements[schedule].paths[track].track;
+                            for (let coord of t) {
+                                let point = new L.LatLng(coord.y, coord.x);
+                                points.push(point);
+                            }
+                        }
+                    }
+                    let firstpolyline = new L.Polyline(points, {
+                        color: 'red',
+                        weight: 3,
+                        opacity: 0.5,
+                        smoothFactor: 1
+                    });
+                    firstpolyline.addTo(mymap);
+                }
+            }
+            request.send();
+        }
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    const form = document.querySelector('.form');
+    form.addEventListener('click', (e) => {
+        console.log('hide your kids');
+        e.target.classList.add('hidden');
+    });
+
+    const $modal = document.getElementById('modal-backdrop');
+    $modal.onclick = () => {
+        hideModal();
     }
 </script>
 </body>
