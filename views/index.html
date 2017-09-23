@@ -22,6 +22,25 @@
 <div id="test"></div>
 <div id="map"></div>
 
+<script>
+    // GeoLocation related code
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const request = new XMLHttpRequest();
+            request.open('GET', `/stations/closest/${position.coords.latitude}/${position.coords.longitude}`, true);
+            request.onload = function() {
+                if (request.status >= 200 && request.status < 400) {
+                    const data = JSON.parse(request.responseText);
+                    console.log(data);
+                }
+            };
+            request.send();
+        });
+    } else {
+        console.warn('no geolocation available');
+    }
+</script>
+
 <script type="text/javascript" src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
 
 <script>
