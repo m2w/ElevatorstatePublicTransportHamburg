@@ -49,6 +49,22 @@ serverInstance.get('/stations/:stationId', (req, res) => {
   });
 });
 
+serverInstance.get('/stations/closest/:lat/:long', (req, res) => {
+  // `lat` and `long` are coordinates, e.g. 10.13121
+  let lat = req.params.lat;
+  let long = req.params.long;
+  if (lat !== undefined && long !== undefined) {
+    geofox.closestStation({ x: long, y: lat }).then((stations) => {
+      res.json(stations);
+    });
+  } else {
+    res.json({
+      error: 'invalid params',
+      msg: 'missing either lat or long params'
+    });
+  }
+});
+
 serverInstance.get('/route/:from/:dest', (req, res) => {
   // `from` and `to` are geofox ids, e.g. Master:91900
   let from = StationRepository.get(mFetcher, req.params.from);
@@ -64,6 +80,8 @@ serverInstance.get('/route/:from/:dest', (req, res) => {
     });
   }
 });
+
+
 
 // start server
 serverInstance.listen(serverInstance.get('port'), function () {

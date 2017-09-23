@@ -92,3 +92,35 @@ exports.getRoutes = (coordianteS, coordianteD) => {
 }
 
 // getRoutes({ x: 9.952789, y: 53.571653 }, { x: 9.90158, y: 53.610399 });
+
+exports.closestStation = (coordinate) => {
+  let body = {
+    "version": 31.1,
+    "maxList": 5,
+    "coordinateType": "EPSG_4326",
+    // distance in meters from coordinate to station
+    "maxDistance": 500,
+    "theName": {
+      "coordinate": coordinate,
+      "type": "STATION"
+    }
+  }
+  let client = axios.create({
+    baseURL: 'http://api-hack.geofox.de/',
+    timeout: 5000,
+    headers: {
+      'geofox-auth-type': 'HmacSHA1',
+      'geofox-auth-user': 'mobi-hack',
+      'geofox-auth-signature': genSig(body)
+    }
+  });
+  return client.post('/gti/public/checkName',
+    body
+  ).then((resp) => {
+    return resp.data.results;
+  }).catch((err) => {
+    console.log(err);
+  });
+};
+
+// closestStation({ x: 10.02996, y: 53.5703475 });
