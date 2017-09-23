@@ -37,7 +37,7 @@
             transform: translate(-50%, -50%);
             background: white;
             padding: 10px;
-            z-index: 9999;
+            z-index: 9000;
             display: none;
             text-align: center;
         }
@@ -61,6 +61,21 @@
             text-align: left;
         }
 
+        #modal .combinedName {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            width: 100%;
+            text-align: center;
+            padding: 10px 0;
+            background: white;
+            font-weight: bold;
+        }
+
+        .leaflet-popup-close-button {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -196,6 +211,12 @@
 
                     // Build circles
                     L.circle([station.coordinate.y, station.coordinate.x], options)
+                        .on('mouseover', (e) => {
+                            const popup = L.popup()
+                                .setLatLng(e.latlng)
+                                .setContent(station.combinedName)
+                                .openOn(mymap);
+                        })
                         .addTo(mymap)
                         .on('click', renderStationInformation(station));
                 });
@@ -249,7 +270,7 @@
                                 + '<div><div class="circle" style="background: ' + color + '"></div> ' + lines + '</div>';
                         });
 
-                        $modal.innerHTML = $modal.innerHTML + '<div class="elevators">' + statusBubblesHTML + '</div></ul>';
+                        $modal.innerHTML = $modal.innerHTML + '<div class="combinedName">' + station.combinedName + '</div>' + '<div class="elevators">' + statusBubblesHTML + '</div></ul>';
 
                         $modal.style.display = 'block';
                     }
