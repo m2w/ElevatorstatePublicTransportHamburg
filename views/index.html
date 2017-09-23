@@ -153,11 +153,6 @@
 
                 // Build a circle for every station
                 data.forEach((station) => {
-                    if (station.id === 'Master:80950') {
-                        console.log(station);
-                    }
-
-
                     // Build the circle options
                     const options = {
                         fillOpacity: 0.7,
@@ -204,8 +199,6 @@
                 if (request.status >= 200 && request.status < 400) {
                     // Success!
                     const data = JSON.parse(request.responseText);
-
-                    console.log(data);
 
                     const $modal = document.getElementById('modal');
                     if (typeof data[0] !== 'undefined' && typeof data[0].stationOutline !== 'undefined') {
