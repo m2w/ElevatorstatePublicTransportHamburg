@@ -44,4 +44,4 @@ exports.get = (mFetcher, id) => {
         }
     }
     return undefined;
-}
+};
