@@ -127,3 +127,46 @@ exports.closestStation = (coordinate) => {
 };
 
 // closestStation({ x: 10.02996, y: 53.5703475 });
+
+exports.getTrip = (start, end) => {
+  let body = {
+    "version": 31.1,
+    "language": "de",
+    "start":
+    {
+      "id": start,
+      "type": "STATION"
+    },
+    "dest": {
+      "id": end,
+      "type": "STATION"
+    },
+    "time": {
+      "date": new Date()
+    },
+    "realtime": "REALTIME",
+    "timeIsDeparture": true,
+    "tariffDetails": true,
+    "penalties": [{
+      "name": "AnyHandicap",
+      "value": "0"
+    }],
+    "numberOfSchedules": 1
+  }
+  let client = axios.create({
+    baseURL: 'http://api-hack.geofox.de/',
+    timeout: 5000,
+    headers: {
+      'geofox-auth-type': 'HmacSHA1',
+      'geofox-auth-user': 'mobi-hack',
+      'geofox-auth-signature': genSig(body)
+    }
+  });
+  return client.post('/gti/public/getRoute',
+    body
+  ).then((resp) => {
+    return resp.data.realtimeSchedules;
+  }).catch((err) => {
+    console.log(err);
+  });
+}

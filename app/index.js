@@ -98,6 +98,20 @@ serverInstance.get('/route/:from/:dest', (req, res) => {
   }
 });
 
+serverInstance.get('/trip/:start/:end', (req, res) => {
+  let from = req.params.start;
+  let to = req.params.end
+  if (from !== undefined && to !== undefined) {
+    geofox.getTrip(from, to).then((route) => {
+      res.json(route);
+    });
+  } else {
+    res.json({
+      error: 'invalid params',
+      msg: 'either from or dest has no elevators or is an invalid route target'
+    });
+  }
+});
 
 
 // start server
