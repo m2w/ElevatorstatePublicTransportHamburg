@@ -15,11 +15,72 @@
 
         body {
             margin: 0;
+            position: relative;
+        }
+
+        .statusBubble {
+            width: 25px;
+            height: 25px;
+            border-radius: 25px;
+            float: left;
+            margin: 0 10px;
+        }
+
+        .clearfix:after {
+            visibility: hidden;
+            display: block;
+            content: " ";
+            height: 0;
+            font-size: 0;
+            clear: both
+        }
+
+        #modal {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            max-width: 80%;
+            max-height: 80%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 10px;
+            z-index: 9999;
+            display: none;
+            text-align: center;
+        }
+
+        #modal img {
+            max-width: 100%;
+            max-height: 100%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #modal ul {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            list-style: none;
+            padding: 5px;
+            margin: 0;
+            font-size: 0;
+            text-align: center;
+            background: white;
+        }
+
+        #modal ul li {
+            font-size: 1rem;
+            display: inline-block;
+            vertical-align: top;
         }
     </style>
 </head>
-<body>
-<div id="test"></div>
+<div id="modal"></div>
 <div id="map"></div>
 
 <script type="text/javascript" src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
@@ -58,26 +119,23 @@
 
                     // Build circles
                     L.circle([station.coordinate.y, station.coordinate.x], options)
-                        .bindPopup('', {maxWidth: '500px', maxHeight: '500px'})
                         .addTo(mymap)
                         .on('click', renderStationInformation(station));
                 });
             } else {
-                // We reached our target server, but it returned an error
+                console.error('We reached our target server, but it returned an error');
             }
         };
 
         request.onerror = () => {
-            // There was a connection error of some sort
+            console.error('There was a connection error of some sort');
         };
 
         request.send();
     };
 
-
     const renderStationInformation = (station) => {
-        return (e) => {
-            const popup = e.target.getPopup();
+        return () => {
             const request = new XMLHttpRequest();
 
             request.open('GET', '/stations/' + station.id, true);
@@ -86,22 +144,45 @@
                     // Success!
                     const data = JSON.parse(request.responseText);
 
-                    popup.setContent(`<img src="${data[0].stationOutline}" height="400px" alt="station">`);
-                    popup.update();
+                    const $modal = document.getElementById('modal');
+                    if (typeof data[0] !== 'undefined' && typeof data[0].stationOutline !== 'undefined') {
+                        $modal.innerHTML = '<img src="' + data[0].stationOutline + '">';
+                    }
+
+                    let statusBubblesHTML = '';
+
+                    if (typeof data[0] !== 'undefined' && typeof data[0].elevators !== 'undefined') {
+                        data[0].elevators.forEach((elevator) => {
+                            let color = 'yellow';
+
+                            if (elevator.state === 'READY') {
+                                color = 'green';
+                            }
+
+                            if (elevator.state === 'OUTOFORDER') {
+                                color = 'red';
+                            }
+
+                            statusBubblesHTML = statusBubblesHTML
+                                + '<li><span class="statusBubble" style="background: ' + color + '"></span></li>';
+                        });
+
+                        $modal.innerHTML = $modal.innerHTML + '<ul>' + statusBubblesHTML + '</ul>';
+
+                        $modal.style.display = 'block';
+                    }
                 } else {
-                    // We reached our target server, but it returned an error
+                    console.error('We reached our target server, but it returned an error');
                 }
             };
 
             request.onerror = () => {
-                // There was a connection error of some sort
+                console.error('There was a connection error of some sort');
             };
 
             request.send();
         };
     };
-
-
     renderStations();
 </script>
 
@@ -116,6 +197,11 @@
         'Imagery © <a href="http://mapbox.com">Mapbox</a>',
         id: 'mapbox.streets'
     }).addTo(mymap);
+
+    const $modal = document.getElementById('modal');
+    window.onclick = () => {
+        $modal.style.display = "none";
+    }
 </script>
 </body>
 </html>

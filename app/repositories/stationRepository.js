@@ -9,7 +9,7 @@ severity = (status) => {
         return -1;
     }
     return 0;
-}
+};
 
 exports.all = (mFetcher) => {
     let cache = mFetcher.stationCache;

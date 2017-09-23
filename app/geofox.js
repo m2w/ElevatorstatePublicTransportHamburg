@@ -6,7 +6,7 @@ let genSig = (body) => {
   let s = JSON.stringify(body);
   hmac.update(s);
   return hmac.digest('base64');
-}
+};
 
 exports.getStationData = (id) => {
   let body = {
@@ -30,13 +30,14 @@ exports.getStationData = (id) => {
   }).catch((err) => {
     console.log(err);
   });
-}
+};
 
 exports.getAllStations = () => {
   let body = {
     "language": "de",
     "version": 31.1
-  }
+  };
+
   let client = axios.create({
     baseURL: 'http://api-hack.geofox.de/',
     timeout: 5000,
@@ -53,7 +54,7 @@ exports.getAllStations = () => {
   }).catch((err) => {
     console.log(err);
   });
-}
+};
 
 exports.getRoutes = (coordianteS, coordianteD) => {
   let body = {
@@ -70,7 +71,8 @@ exports.getRoutes = (coordianteS, coordianteD) => {
     ],
     "type": "EPSG_4326",
     "serviceType": "FOOTPATH"
-  }
+  };
+
   let client = axios.create({
     baseURL: 'http://api-hack.geofox.de/',
     timeout: 5000,
@@ -89,7 +91,7 @@ exports.getRoutes = (coordianteS, coordianteD) => {
   }).catch((err) => {
     console.log(err);
   });
-}
+};
 
 // getRoutes({ x: 9.952789, y: 53.571653 }, { x: 9.90158, y: 53.610399 });
 
@@ -104,7 +106,8 @@ exports.closestStation = (coordinate) => {
       "coordinate": coordinate,
       "type": "STATION"
     }
-  }
+  };
+
   let client = axios.create({
     baseURL: 'http://api-hack.geofox.de/',
     timeout: 5000,
