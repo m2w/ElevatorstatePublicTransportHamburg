@@ -65,6 +65,23 @@ serverInstance.get('/stations/closest/:lat/:long', (req, res) => {
   }
 });
 
+serverInstance.get('/route/:lat/:long/:dest', (req, res) => {
+  // `lat` and `long` are coordinates, and `to` is a geofox id, e.g. Master:91900
+  let lat = req.params.lat;
+  let long = req.params.long;
+  let to = StationRepository.get(mFetcher, req.params.dest);
+  if (lat !== undefined && long !== undefined && to !== undefined) {
+    geofox.getRoutes({ x: long, y: lat }, to.coordinate).then((route) => {
+      res.json(route);
+    });
+  } else {
+    res.json({
+      error: 'invalid params',
+      msg: 'either from or dest has no elevators or is an invalid route target'
+    });
+  }
+});
+
 serverInstance.get('/route/:from/:dest', (req, res) => {
   // `from` and `to` are geofox ids, e.g. Master:91900
   let from = StationRepository.get(mFetcher, req.params.from);
