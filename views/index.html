@@ -19,19 +19,56 @@
     </style>
 </head>
 <body>
-<div id="test"></div>
 <div id="map"></div>
 
+<script type="text/javascript" src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+
 <script>
+    function drawRoute(lat, long, end) {
+        const request = new XMLHttpRequest();
+        request.open('GET', `/route/${lat}/${long}/${end}`, true);
+        request.onload = function() {
+                if (request.status >= 200 && request.status < 400) {
+                    const data = JSON.parse(request.responseText);
+                    const paths = data[0].paths;
+                    let points = []
+                    for (let track in paths) {
+                        for (let coord of paths[track].track) {
+                            let point = new L.LatLng(coord.y, coord.x);
+                            points.push(point);
+                        }
+                    }
+                    var firstpolyline = new L.Polyline(points, {
+                        color: 'red',
+                        weight: 3,
+                        opacity: 0.5,
+                        smoothFactor: 1
+                    });
+                    firstpolyline.addTo(mymap);
+                }
+            };
+            request.send();
+    }
+
     // GeoLocation related code
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(function(position) {
+            const options = {
+                fillOpacity: 0.7,
+                radius: 80,
+                color: 'blue',
+                fillColor: '#3F7FBF'
+            };
+            L.circle([position.coords.latitude, position.coords.longitude], options).addTo(mymap);
+
             const request = new XMLHttpRequest();
             request.open('GET', `/stations/closest/${position.coords.latitude}/${position.coords.longitude}`, true);
             request.onload = function() {
                 if (request.status >= 200 && request.status < 400) {
                     const data = JSON.parse(request.responseText);
-                    console.log(data);
+                    const target = data[0];
+
+                    drawRoute(position.coords.latitude, position.coords.longitude, data[0].id);
                 }
             };
             request.send();
@@ -40,8 +77,6 @@
         console.warn('no geolocation available');
     }
 </script>
-
-<script type="text/javascript" src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
 
 <script>
     const renderStations = function () {
